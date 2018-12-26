@@ -4,7 +4,7 @@
 	2.客户端发送进入群聊：all+join
 	3.客户端发送退出群聊：all+quit
 	4.客户端发送群聊消息：all+"消息"
-  5.客户端发送单聊信息：single+"接收方名字"+"消息"
-  6.获取加入群聊的人员名单：online_name+group
-  7.获取所有在线人员名单：online_name
+        5.客户端发送单聊信息：single+"接收方名字"+"消息" 
+        6.获取加入群聊的人员名单：online_name+group
+        7.获取所有在线人员名单：online_name
 
