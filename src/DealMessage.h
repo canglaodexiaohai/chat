@@ -7,6 +7,7 @@ class DealMessage
   public:
     ssize_t NoBlockRead(int fd, string &str);
     void ParseMessage(int fd, string &str);
+    void NoBlockSend(int fd, string &str);
   private:
     ssize_t readn(int fd, void *vptr, size_t n);
     ssize_t write(int fd, void *vptr, size_t n);
@@ -16,7 +17,6 @@ class DealMessage
     void DealAll(int fd,  string &str);
     void OnLineName(int fd, int group);
     void SendAllMessage(string &str);
-    void NoBlockSend(int fd, string &str);
 };
 
 #endif  //_DEAL_MESSAGE_H

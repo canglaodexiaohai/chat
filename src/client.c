@@ -1,25 +1,14 @@
-#include"Common.h"
-#include <stdio.h>
-
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <netdb.h> //for gethostbyname
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include<fcntl.h>
+#include"DealMessage.h"
+#include<errno.h>
 #include<string>
-#include<iostream>
+#include<stdlib.h>
 #define MAX_BUF 4096
+
 #define SERVER_PORT 8080
 #define SERVER_IP "127.0.0.1"
-
-int main(int argc,char *argv[])
+void loop(int i)
 {
     int sockfd;//socket
-	char buf[1024];
     //创建socket
     if((sockfd=socket(AF_INET,SOCK_STREAM,0))==-1)
     {
@@ -50,18 +39,29 @@ int main(int argc,char *argv[])
     printf("Success to connect the socket...\n");
     //send-recv
     std::string str;
-    
+    Packet readbuf,writebuf;
+    char buf[1024];
     while(1)
     {
-        printf("Input:");
-       //bin fgets(buf,1024,stdin);
-		//buf[1024]="asdsda";
-        std::cin>>str;
-        send(sockfd,str.c_str(),str.length()+1,0);
-        recv(sockfd,buf,1024,0);
+        cout<<"Input:";
+        cin>>str;
+       // str="name+"+std::to_string(i);
+        writebuf.n_msgLen = str.length()+1;
+        strcpy(writebuf.msg,str.c_str());
+        send(sockfd,&writebuf,writebuf.n_msgLen+4,0);
+        recv(sockfd,&readbuf.n_msgLen,4,0);
+        recv(sockfd,buf,readbuf.n_msgLen,0);
         printf("Server:%s\n",buf);
         memset(buf,0,sizeof(buf));
+
     }
 
-    return 0;
+}
+int main()
+{
+  for(int i=0;i<1;++i)
+  {
+    loop(i);
+  }
+  return 0;
 }

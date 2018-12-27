@@ -62,7 +62,7 @@ ssize_t writen(int fd, const void *vptr, size_t n)
 ssize_t DealMessage::NoBlockRead(int fd, string &str)
 {
   ssize_t total_size =0;
-  char buf[1024]={0};
+  char buf[BUFSIZE]={0};
   Packet readbuf;
   //memset(&readbuf,0,sizeof(readbuf));
   ssize_t ret = readn(fd, &readbuf.n_msgLen, 4);
@@ -70,24 +70,36 @@ ssize_t DealMessage::NoBlockRead(int fd, string &str)
   {
     return ret;
   }
-  int n_dataBytes = ntohl(readbuf.n_msgLen);
+  int n_dataBytes = readbuf.n_msgLen;
 
-  while(total_size != n_dataBytes)
+  while(0 < n_dataBytes)
   {
-    bzero(buf,sizeof(buf));
-    ssize_t cur_size = read(fd, buf, 1023);
-    total_size += cur_size;
+    bzero(buf,sizeof(buf));  
+    ssize_t cur_size = 0;
+    if(n_dataBytes > BUFSIZE)
+    {
+      cur_size = readn(fd, &readbuf.msg,BUFSIZE);
+      total_size += cur_size;
+      n_dataBytes -= 1024;
+    }
+    else 
+    {
+      cur_size = readn(fd,&readbuf.msg,n_dataBytes);
+      total_size += cur_size;
+      n_dataBytes = 0;
+    }
     if(cur_size > 0)
     {
       char *to_str_utf8 = NULL;
       int len = 0;
+      strcpy(buf,readbuf.msg);
       to_str_utf8 = (char*)calloc(1,strlen(buf)*3);
       len = charset_convert("GB2312", "UTF-8", buf, strlen(buf), to_str_utf8,strlen(buf)*3);
       string tmp(to_str_utf8);
       str += tmp;
       free(to_str_utf8);
     }
-    if(cur_size <1023 || errno == EAGAIN)
+    if(cur_size < BUFSIZE || errno == EAGAIN)
     {
       break;
     }
@@ -174,10 +186,19 @@ void DealMessage::NoBlockSend(int fd, string &str)
   }*/
   Packet writebuf;
   int n_len = str.length()+1;
-  writebuf.n_msgLen=htonl(n_len);
-  writebuf.msg = str;
-  writen(fd, &writebuf, n_len+4);
-
+  writebuf.n_msgLen=n_len;
+  if(n_len > BUFSIZE)
+  {
+    strncpy(writebuf.msg , str.c_str(),BUFSIZE);
+    writen(fd, &writebuf,  BUFSIZE+4);
+    n_len -= BUFSIZE;
+    writen(fd, str.c_str()+BUFSIZE, n_len);
+  }
+  else 
+  {
+    strcpy(writebuf.msg, str.c_str());
+    writen(fd,&writebuf,n_len+4);
+  }
 }
 
 void DealMessage::DealName(int fd, string &str)

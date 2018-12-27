@@ -30,10 +30,11 @@ typedef struct Info
   int flag;
 }Info;
 
+#define BUFSIZE 10
 typedef struct Packet
 {
   unsigned int n_msgLen;
-  string msg;
+  char  msg[BUFSIZE];
 }Packet;
 
 extern map<int, Info> m_match;
